@@ -7,7 +7,7 @@ import os
 import time
 import pandas as pd
 from scipy.spatial.transform import Rotation as R
-
+from tqdm import tqdm
 
 def DLT_adaptive(projections, points, idx_cams_used: list):
     A=[]
@@ -50,27 +50,33 @@ def triangulate_points_adaptive(uvs, mtxs, dists, projections, scores: list, thr
     num_frames = len(uvs[0])  # Nombre de frames, basé sur la première caméra
     num_points = len(uvs[0][0])  # Nombre de points, basé sur la première frame de la première caméra
     p3ds_frames = []
+    total_idx=0
+    with tqdm(total=num_frames, desc="Triangulation", unit="frame") as pbar:
+        for frame_idx in range(num_frames):
+            which_cam_used_list = which_cameras_used(scores[frame_idx], threshold)
+            p3ds_frame=[]
+            points_2d_per_frame = [uv[frame_idx] for uv in uvs] 
 
-    for frame_idx in range(num_frames):
-        which_cam_used_list = which_cameras_used(scores[frame_idx], threshold)
-        p3ds_frame=[]
-        points_2d_per_frame = [uv[frame_idx] for uv in uvs] 
+            undistorted_points = []
 
-        undistorted_points = []
+            idx_cams_used = index_cameras_used(which_cam_used_list)
+            # print('Voici les caméras utilisés pour chaque frame' , idx_cams_used)
 
-        idx_cams_used = index_cameras_used(which_cam_used_list)
-        print(idx_cams_used)
-        for cam_idx in idx_cams_used:
-            points = points_2d_per_frame[cam_idx]
-            distCoeffs_mat = np.array([dists[cam_idx]]).reshape(-1, 1)
-            points_undistorted = cv.undistortPoints(np.array(points).reshape(-1, 1, 2), mtxs[cam_idx], distCoeffs_mat)
-            undistorted_points.append(points_undistorted)
+            for cam_idx in idx_cams_used:
+                points = points_2d_per_frame[cam_idx]
+                distCoeffs_mat = np.array([dists[cam_idx]]).reshape(-1, 1)
+                points_undistorted = cv.undistortPoints(np.array(points).reshape(-1, 1, 2), mtxs[cam_idx], distCoeffs_mat)
+                undistorted_points.append(points_undistorted)
 
-        for point_idx in range(num_points):
-            points_per_point = [undistorted_points[i][point_idx] for i in range(len(undistorted_points))]
-            _p3d = DLT_adaptive(projections, points_per_point, idx_cams_used)
-            p3ds_frame.append(_p3d)
+            for point_idx in range(num_points):
+                points_per_point = [undistorted_points[i][point_idx] for i in range(len(undistorted_points))]
+                _p3d = DLT_adaptive(projections, points_per_point, idx_cams_used)
+                p3ds_frame.append(_p3d)
 
-        p3ds_frames.append(p3ds_frame)
+            pbar.update(1)
 
+            p3ds_frames.append(p3ds_frame)
+            total_idx=total_idx+len(idx_cams_used)
+    mean = total_idx / num_frames
+    print("En moyenne " + str(mean) + " caméras ont été utilisées lors de la triangulation. Il est possible d'influencer cette valeur en modifiant le threshold")
     return np.array(p3ds_frames)
