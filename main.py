@@ -1,13 +1,15 @@
 import os
 from utils_triangulation import *
 from utils_animation_triangul import *
+from utils_animation_LSTM import *
 from utils import *
+from utils_LSTM import modif_LSTM ,augmentTRC
 
 no_sujet = int(input("Entrez le numéro du sujet (ex: 2): "))
 task = input("Entrez la tâche (ex: 'assis-debout'): ")
 threshold = float(input("Quelle est la valeur du threshold: "))
 while True:
-    affichage_anim_triangul= input("Voulez-vous afficher l'animation des résultats du LSTM ? (oui/non) : ").strip().lower()
+    affichage_anim_triangul= input("Voulez-vous afficher l'animation concernant la triangulation? (oui/non) : ").strip().lower()
     if affichage_anim_triangul in ['oui', 'o', 'yes', 'y']:
         afficher_resultats_triangul = True
         break
@@ -16,7 +18,16 @@ while True:
         break
     else:
         print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
-
+while True:
+    affichage_anim_LSTM= input("Voulez-vous afficher l'animation concernant le LSTM ? (oui/non) : ").strip().lower()
+    if affichage_anim_LSTM in ['oui', 'o', 'yes', 'y']:
+        afficher_resultats_LSTM = True
+        break
+    elif affichage_anim_LSTM in ['non', 'n', 'no']:
+        afficher_resultats_LSTM = False
+        break
+    else:
+        print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
 
 #Etape 1 : Transformation des fichiers pour ajouter les coordonées des mains à partir des fichiers de body26 et wholebody.
 
@@ -104,14 +115,10 @@ donnees = get_cams_params_challenge()
 for cam in donnees :
     R_extrinseque = np.zeros(shape=(3,3))
     rotation=np.array(donnees[cam]["rotation"])
-    # print(rotation)
     translation=np.array([donnees[cam]["translation"]]).reshape(3,1)
     cv.Rodrigues(rotation.reshape(3,1), R_extrinseque)
-    # print(R_extrinseque)
     projection = np.concatenate([R_extrinseque, translation], axis=-1)
-    # print(projection)
     donnees[cam]["projection"] = projection
-    # print("avec boucle pour la cam : ", cam , donnees[cam]["projection"])
 
 rotations=[]
 translations=[]
@@ -144,7 +151,6 @@ scores = read_mmpose_scores(liste_fichiers)
 
 p3ds_frames = triangulate_points_adaptive(uvs, mtxs, dists, projections, scores, threshold)
 p3ds_frames = butterworth_filter(p3ds_frames,5.0)
-# p3ds_frames = triangulate_points(uvs, mtxs, dists, projections)
 
 # joints_trc = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist', 'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle', 'head', 'neck', 'hip', 'left_big_toe', 'right_big_toe', 'left_small_toe', 'right_small_toe', 'left_heel', 'right_heel','Left_hand_root', 'left_thumb1', 'left_thumb2', 'left_forefinger1', 'left_middle_finger1', 'left_ring_finger1', 'left_pinky_finger1','right_hand_root', 'right_thumb1', 'right_thumb2', 'right_forefinger1','right_middle_finger1', 'right_ring_finger1', 'right_pinky_finger1']
 
@@ -155,14 +161,14 @@ p3ds_frames = butterworth_filter(p3ds_frames,5.0)
 #         frame_flat = frame.flatten()
 #         f.write(','.join(map(str, frame_flat)) + '\n')
 
-LSTM_dir = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation'
+triangul_dir = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation'
 output_file ='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation/jcp_coordinates_ncameras_avec_score_for_LSTM_'+task+'_sujet'+str(no_sujet)+'.trc'
 
 
 # Création du répertoire si nécessaire
-if not os.path.exists(LSTM_dir):
-    os.makedirs(LSTM_dir)
-    print(f'Le répertoire {LSTM_dir} a été créé.')
+if not os.path.exists(triangul_dir):
+    os.makedirs(triangul_dir)
+    print(f'Le répertoire {triangul_dir} a été créé.')
 
 # Écriture des résultats dans le fichier TRC
 try:
@@ -170,12 +176,40 @@ try:
         for frame in p3ds_frames:
             frame_flat = frame.flatten()
             f.write(','.join(map(str, frame_flat)) + '\n')
-    print(f'Les coordonnées ont été écrites dans le fichier {output_file}.')
+    print(f'Les coordonnées 3D ont été écrites dans le fichier suivant : jcp_coordinates_ncameras_avec_score_for_LSTM_'+task+'_sujet'+str(no_sujet)+'.trc.')
 except Exception as e:
     print(f"Erreur lors de l'écriture dans le fichier {output_file} : {e}")
 
-# Affichage de l'animation de la triangulation
+
+
+
+# Etape 3 : Affichage de l'animation concernant la triangulation
 if afficher_resultats_triangul:
     affichage_triangul(output_file)
+    
 else:
-    print("Les résultats du LSTM ne seront pas affichés.")
+    print("L'animation concernant la triangulation ne sera pas affichée.")
+
+
+
+# Etape 4: LSTM
+
+modif_LSTM(output_file,no_sujet,task)
+pathInputTRCFile='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
+    # pathInputTRCFile="/home/tbousquet/Documents/LSTM/data/7272a71a-e70a-4794-a253-39e11cb7542c/PreAugmentation/a9fd6740-1c9d-40df-beca-15e6eecf08d7.trc"
+if no_sujet == 1:
+    subject_mass=60.0
+    subject_height=1.57
+elif no_sujet == 2:
+    subject_mass=58.0
+    subject_height=1.74
+    pathOutputTRCFile='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
+    augmenterDir="/home/tbousquet/Documents/COSMIK/"
+augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
+
+
+# Etape 5: Animation du LSTM :
+if afficher_resultats_LSTM:
+    affichage_LSTM(pathOutputTRCFile,task,no_sujet)
+else:
+    print("L'animation concernant le LSTM ne sera pas affichée.")
