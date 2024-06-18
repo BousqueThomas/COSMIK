@@ -8,18 +8,7 @@ import time
 
 #AFFICHAGE ____________________________________________________
 
-def affichage_LSTM(fichier_trc_mks, task, no_sujet):
-
-    # Lecture du fichier TRC en utilisant pandas
-    donnees_trc_mks = pd.read_csv(fichier_trc_mks, skiprows=3, delimiter='\t', header=None)
-
-    # Affichage des premières lignes des données pour vérifier
-    # Chemin pour sauvegarder le fichier CSV
-    fichier_csv_mks = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
-    # Conversion des données en CSV
-    donnees_trc_mks.to_csv(fichier_csv_mks, index=False, header=True)
-
-    print("Conversion terminée. Les données ont été sauvegardées dans", fichier_csv_mks)
+def affichage_LSTM(fichier_csv_mks):
 
 
     mk_data = pd.read_csv(fichier_csv_mks)

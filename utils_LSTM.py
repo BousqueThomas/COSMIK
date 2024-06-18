@@ -117,7 +117,7 @@ def modif_LSTM (trc_file_path,no_sujet,task):
 
 
 def augmentTRC(pathInputTRCFile, subject_mass, subject_height,
-               pathOutputTRCFile, augmenterDir, augmenterModelName="LSTM",
+               pathOutputTRCFile, pathOutputCSVFile, augmenterDir, augmenterModelName="LSTM",
                augmenter_model='v0.3', offset=True):
                
     # This is by default - might need to be adjusted in the future.
@@ -274,6 +274,14 @@ def augmentTRC(pathInputTRCFile, subject_mass, subject_height,
     # %% Return augmented .trc file   
     trc_file.write(pathOutputTRCFile)
     
+    # Lecture du fichier TRC en utilisant pandas
+    donnees_trc_mks = pd.read_csv(pathOutputTRCFile, skiprows=3, delimiter='\t', header=None)
+
+    # Affichage des premières lignes des données pour vérifier
+    # Conversion des données en CSV
+    donnees_trc_mks.to_csv(pathOutputCSVFile, index=False, header=True)
+
+
     print("Le LSTM a terminé.")
     return min_y_pos
 

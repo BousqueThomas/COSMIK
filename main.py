@@ -4,6 +4,7 @@ from utils_animation_triangul import *
 from utils_animation_LSTM import *
 from utils import *
 from utils_LSTM import modif_LSTM ,augmentTRC
+from run_ik import *
 
 no_sujet = int(input("Entrez le numéro du sujet (ex: 2): "))
 task = input("Entrez la tâche (ex: 'assis-debout'): ")
@@ -204,12 +205,17 @@ elif no_sujet == 2:
     subject_mass=58.0
     subject_height=1.74
     pathOutputTRCFile='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
+    pathOutputCSVFile = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
     augmenterDir="/home/tbousquet/Documents/COSMIK/"
-augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
+augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, pathOutputCSVFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
 
 
 # Etape 5: Animation du LSTM :
 if afficher_resultats_LSTM:
-    affichage_LSTM(pathOutputTRCFile,task,no_sujet)
+    affichage_LSTM(pathOutputCSVFile)
 else:
     print("L'animation concernant le LSTM ne sera pas affichée.")
+
+
+# Etape 6 : Inverse Kinematics
+run_ik (no_sujet, task)
