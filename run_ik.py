@@ -1,22 +1,29 @@
+
 # import eigenpy
-from read_write_utils import read_lstm_data, get_lstm_mks_names, read_mocap_data, convert_to_list_of_dicts, write_joint_angle_results
+from tqdm import tqdm
+import sys
+import os
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+
+from read_write_utils import remove_nans_from_list_of_dicts, read_lstm_data, get_lstm_mks_names, read_mocap_data, convert_to_list_of_dicts, write_joint_angle_results
 from ik_utils import IK_Casadi
 import pinocchio as pin 
 from model_utils import get_subset_challenge_mks_names, get_segments_lstm_mks_dict_challenge, build_model_challenge
-import sys
 from pinocchio.visualize import GepettoVisualizer
 from viz_utils import place
 import numpy as np 
 import time 
 
 
-def run_ik (no_sujet, task):
+def run_ik (no_sujet, task, data_path):
 
     subject='sujet_0'+str(no_sujet)
-    fichier_csv_lstm_mks_calib = "/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0"+str(no_sujet)+"/marche/LSTM/jcp_coordinates_ncameras_augmented_"+task+"_"+str(no_sujet)+".csv"
-    fichier_csv_lstm_mks = "/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/"+subject+"/"+task+"/LSTM/jcp_coordinates_ncameras_augmented_"+task+"_"+str(no_sujet)+".csv"
-    fichier_csv_mocap_mks = "/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/mocap_mks_recup_"+subject+".trc"
-    meshes_folder_path = "/home/tbousquet/Documents/COSMIK/meshes/" #Changes le par ton folder de meshes
+    fichier_csv_lstm_mks_calib = f"{data_path}sujet_0"+str(no_sujet)+"/marche/LSTM/jcp_coordinates_ncameras_augmented_marche_"+str(no_sujet)+".csv"
+    fichier_csv_lstm_mks = f"{data_path}"+subject+"/"+task+"/LSTM/jcp_coordinates_ncameras_augmented_"+task+"_"+str(no_sujet)+".csv"
+    fichier_csv_mocap_mks = f"{data_path}mocap_mks_recup_"+subject+".trc"
+    dir_courant=os.getcwd()
+    meshes_folder_path = f"{dir_courant}/meshes/" #Changes le par ton folder de meshes
 
     #Read data
     lstm_mks_dict, mapping = read_lstm_data(fichier_csv_lstm_mks)
@@ -47,13 +54,20 @@ def run_ik (no_sujet, task):
     #     lstm_mks_dict[jj]["r_5meta_study"]=lstm_mks_dict[0]["r_5meta_study"]
     #     lstm_mks_dict[jj]["r_calc_study"]=lstm_mks_dict[0]["r_calc_study"]
 
+    
+
 
     ik_problem = IK_Casadi(model, lstm_mks_dict, q0)
 
     q = ik_problem.solve_ik()
 
     q=np.array(q)
-    directory_name = "/home/tbousquet/Documents/COSMIK/results_IK/"+subject+"/"+task
+
+    directory_name = f"{dir_courant}/results_IK/"+subject+"/"+task
+    if not os.path.exists(f'{directory_name}/'):
+        os.makedirs(f'{directory_name}/')
+        print(f"Le répertoire pour l'enregistrement dees résultats a été créé.")
+
     write_joint_angle_results(directory_name,q)
 
     ### Visualisation of the obtained trajectory 
@@ -115,4 +129,3 @@ def run_ik (no_sujet, task):
         else:
             time.sleep(0.016)
 
-            

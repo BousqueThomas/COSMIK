@@ -5,6 +5,7 @@ from typing import Dict, List
 import numpy as np 
 from scipy.spatial.transform import Rotation as R
 
+
 class IK_Casadi:
     """ Class to manage multi body IK problem using pinocchio casadi 
     """
@@ -39,7 +40,35 @@ class IK_Casadi:
         cfunction_list = []
         self._new_key_list = [] # Only take the frames that are in the model 
 
-        self._keys_to_track_list = ['C7_study','r_shoulder_study', 'L_shoulder_study','r.ASIS_study', 'L.ASIS_study', 'r.PSIS_study', 'L.PSIS_study','r_lelbow_study', 'r_melbow_study','r_lwrist_study', 'r_mwrist_study','r_ankle_study', 'r_mankle_study','r_toe_study', 'r_5meta_study', 'r_calc_study','r_knee_study', 'r_mknee_study','r_thigh1_study', 'r_thigh2_study', 'r_thigh3_study','r_sh1_study', 'r_sh2_study', 'r_sh3_study']
+
+        
+        #Partie IK à modifier si on veut changer le model
+        #Lister les points LSTM de référence. 
+        
+        self._keys_to_track_list = ['C7_study',
+                                    'r.ASIS_study', 'L.ASIS_study', 
+                                    'r.PSIS_study', 'L.PSIS_study', 
+                                    
+                                    'r_shoulder_study',
+                                    'r_lelbow_study', 'r_melbow_study',
+                                    'r_lwrist_study', 'r_mwrist_study',
+                                    'r_ankle_study', 'r_mankle_study',
+                                    'r_toe_study','r_5meta_study', 'r_calc_study',
+                                    'r_knee_study', 'r_mknee_study',
+                                    'r_thigh1_study', 'r_thigh2_study', 'r_thigh3_study',
+                                    'r_sh1_study', 'r_sh2_study', 'r_sh3_study',
+                                    
+                                    'L_shoulder_study', 
+                                    'L_lelbow_study', 'L_melbow_study',
+                                    'L_lwrist_study','L_mwrist_study',
+                                    'L_ankle_study', 'L_mankle_study', 
+                                    'L_toe_study','L_5meta_study', 'L_calc_study',
+                                    'L_knee_study', 'L_mknee_study',
+                                    'L_thigh1_study', 'L_thigh2_study', 'L_thigh3_study',
+                                    'L_sh1_study', 'L_sh2_study', 'L_sh3_study']
+        
+
+
 
         for key in self._keys_to_track_list:
             index_mk = self._cmodel.getFrameId(key)
@@ -51,7 +80,9 @@ class IK_Casadi:
 
         self._cfunction_dict=dict(zip(self._new_key_list,cfunction_list))
 
-        self._mapping_joint_angle = dict(zip(['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_RIE','RShoulder_FE','RShoulder_AA','RShoulder_RIE','RElbow_FE','RElbow_PS','RHip_FE','RHip_AA','RHip_RIE','RKnee_FE','RAnkle_FE'],np.arange(0,self._nq,1)))
+        #'FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3' => sont les joints du pelvis
+        # Ensuite, il faut avoir les mêmes joint que lorsque l'on fait le check_build_model
+        self._mapping_joint_angle = dict(zip(['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_R_EXT_INT','Shoulder_Z_R','Shoulder_X_R','Shoulder_Y_R','Elbow_Z_R','Elbow_Y_R','Shoulder_Z_L','Shoulder_X_L','Shoulder_Y_L','Elbow_Z_L','Elbow_Y_L','Hip_Z_R','Hip_X_R','Hip_Y_R','Knee_Z_R','Ankle_Z_R','Hip_Z_L','Hip_X_L','Hip_Y_L','Knee_Z_L','Ankle_Z_L'],np.arange(0,self._nq,1)))
 
     def create_meas_list(self)-> List[Dict]:
         """_Create a list with each element is a dictionnary of measurements referencing a given sample_
@@ -195,3 +226,9 @@ class IK_Singlebody:
 # convention = 'xyz'
 # joint_angles = dk.solve_ik(parent_orientation_matrix, child_orientation_matrix, convention)
 # print("Joint angles:", joint_angles)
+
+
+
+
+
+

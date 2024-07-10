@@ -9,6 +9,8 @@ from run_ik import *
 no_sujet = int(input("Entrez le numéro du sujet (ex: 2): "))
 task = input("Entrez la tâche (ex: 'assis-debout'): ")
 threshold = float(input("Quelle est la valeur du threshold: "))
+data_path='/home/tbousquet/Documents/Donnees_cosmik/Data/'
+
 while True:
     affichage_anim_triangul= input("Voulez-vous afficher l'animation concernant la triangulation? (oui/non) : ").strip().lower()
     if affichage_anim_triangul in ['oui', 'o', 'yes', 'y']:
@@ -19,6 +21,7 @@ while True:
         break
     else:
         print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
+
 while True:
     affichage_anim_LSTM= input("Voulez-vous afficher l'animation concernant le LSTM ? (oui/non) : ").strip().lower()
     if affichage_anim_LSTM in ['oui', 'o', 'yes', 'y']:
@@ -30,36 +33,40 @@ while True:
     else:
         print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
 
+
+
+
+
 #Etape 1 : Transformation des fichiers pour ajouter les coordonées des mains à partir des fichiers de body26 et wholebody.
 
 
 #Ces chemins ont été déterminés lors du process de MMPose
 liste_fichiers = [
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
     ]
 
 liste_fichiers_main = [
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
 ]
 
 
-if not os.path.exists  ( '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all') :
+if not os.path.exists  ( f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all') :
     try:    
         with open('add_hands.py') as f:
             code = f.read()
@@ -81,15 +88,15 @@ else :
 
 
 liste_fichiers_all = [
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26585_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26587_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26578_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26579_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26580_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26582_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26583_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26584_sujet'+str(no_sujet)+'.txt',
-    '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26586_sujet'+str(no_sujet)+'.txt'
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26585_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26587_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26578_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26579_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26580_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26582_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26583_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26584_sujet'+str(no_sujet)+'.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26586_sujet'+str(no_sujet)+'.txt'
 ]
 
 
@@ -131,7 +138,7 @@ projections=[]
 donnees_correspondantes = {}
 
 # Parcourir les fichiers
-for fichier in liste_fichiers:
+for fichier in liste_fichiers_all:
     # Extraire le numéro de série de la caméra
     numero_fichier = fichier.split('_')[-2]
     
@@ -146,7 +153,7 @@ for fichier in liste_fichiers:
         projections.append(donnees[numero_fichier]["projection"])
 
 
-scores = read_mmpose_scores(liste_fichiers)
+scores = read_mmpose_scores(liste_fichiers_all)
 
 
 
@@ -162,8 +169,8 @@ p3ds_frames = butterworth_filter(p3ds_frames,5.0)
 #         frame_flat = frame.flatten()
 #         f.write(','.join(map(str, frame_flat)) + '\n')
 
-triangul_dir = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation'
-output_file ='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation/jcp_coordinates_ncameras_avec_score_for_LSTM_'+task+'_sujet'+str(no_sujet)+'.trc'
+triangul_dir = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation'
+output_file_triangul =f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/post_triangulation/jcp_coordinates_ncameras_avec_score_for_LSTM_'+task+'_sujet'+str(no_sujet)+'.trc'
 
 
 # Création du répertoire si nécessaire
@@ -173,20 +180,20 @@ if not os.path.exists(triangul_dir):
 
 # Écriture des résultats dans le fichier TRC
 try:
-    with open(output_file, 'w') as f:
+    with open(output_file_triangul, 'w') as f:
         for frame in p3ds_frames:
             frame_flat = frame.flatten()
             f.write(','.join(map(str, frame_flat)) + '\n')
     print(f'Les coordonnées 3D ont été écrites dans le fichier suivant : jcp_coordinates_ncameras_avec_score_for_LSTM_'+task+'_sujet'+str(no_sujet)+'.trc.')
 except Exception as e:
-    print(f"Erreur lors de l'écriture dans le fichier {output_file} : {e}")
+    print(f"Erreur lors de l'écriture dans le fichier {output_file_triangul} : {e}")
 
 
 
 
 # Etape 3 : Affichage de l'animation concernant la triangulation
 if afficher_resultats_triangul:
-    affichage_triangul(output_file)
+    affichage_triangul(output_file_triangul)
     
 else:
     print("L'animation concernant la triangulation ne sera pas affichée.")
@@ -195,8 +202,8 @@ else:
 
 # Etape 4: LSTM
 
-modif_LSTM(output_file,no_sujet,task)
-pathInputTRCFile='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
+modif_LSTM(output_file_triangul,no_sujet,task)
+pathInputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
     # pathInputTRCFile="/home/tbousquet/Documents/LSTM/data/7272a71a-e70a-4794-a253-39e11cb7542c/PreAugmentation/a9fd6740-1c9d-40df-beca-15e6eecf08d7.trc"
 if no_sujet == 1:
     subject_mass=60.0
@@ -204,9 +211,9 @@ if no_sujet == 1:
 elif no_sujet == 2:
     subject_mass=58.0
     subject_height=1.74
-    pathOutputTRCFile='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
-    pathOutputCSVFile = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
-    augmenterDir="/home/tbousquet/Documents/COSMIK/"
+    pathOutputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
+    pathOutputCSVFile = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
+    augmenterDir=os.getcwd()
 augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, pathOutputCSVFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
 
 
@@ -218,4 +225,5 @@ else:
 
 
 # Etape 6 : Inverse Kinematics
-run_ik (no_sujet, task)
+print("L'IK va commencer.")
+run_ik (no_sujet, task, data_path)

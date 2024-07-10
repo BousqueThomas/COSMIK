@@ -53,6 +53,14 @@ def read_lstm_data(file_name: str)->Tuple[Dict, Dict]:
 
     return d3,mapping
 
+
+def remove_nans_from_list_of_dicts(list_of_dicts):
+    for i in range(len(list_of_dicts)):
+        for key, value in list_of_dicts[i].items():
+            if np.isnan(value[0][0]):
+                list_of_dicts[i][key] = list_of_dicts[i-1][key]
+    return list_of_dicts
+
 def convert_to_list_of_dicts(dict_mks_data: Dict)-> List:
     """_This function converts a dictionnary of data outputed from read_lstm_data(), to a list of dictionnaries for each sample._
 
@@ -117,7 +125,9 @@ def write_joint_angle_results(directory_name: str, q:np.ndarray):
         directory_name (str): _Name of the directory to store the results_
         q (np.ndarray): _Joint angle results_
     """
-    dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_RIE','RShoulder_FE','RShoulder_AA','RShoulder_RIE','RElbow_FE','RElbow_PS','RHip_FE','RHip_AA','RHip_RIE','RKnee_FE','RAnkle_FE']
+    dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_R_EXT_INT','Shoulder_Z_R','Shoulder_X_R',
+                  'Shoulder_Y_R','Elbow_Z_R','Elbow_Y_R','Shoulder_Z_L','Shoulder_X_L','Shoulder_Y_L','Elbow_Z_L','Elbow_Y_L','Hip_Z_R','Hip_X_R',
+                  'Hip_Y_R','Knee_Z_R','Ankle_Z_R','Hip_Z_L','Hip_X_L','Hip_Y_L','Knee_Z_L','Ankle_Z_L']
     for ii in range(q.shape[1]):
         open(directory_name+'/'+dofs_names[ii]+'.csv', 'w').close() # clear the file 
         np.savetxt(directory_name+'/'+dofs_names[ii]+'.csv', q[:,ii])
@@ -128,22 +138,24 @@ def plot_joint_angle_results(directory_name:str):
     Args:
         directory_name (str): _Directory name where the data to plot are stored_
     """
-    dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_RIE','RShoulder_FE','RShoulder_AA','RShoulder_RIE','RElbow_FE','RElbow_PS','RHip_FE','RHip_AA','RHip_RIE','RKnee_FE','RAnkle_FE']
+    dofs_names =  ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_R_EXT_INT','Shoulder_Z_R','Shoulder_X_R',
+                  'Shoulder_Y_R','Elbow_Z_R','Elbow_Y_R','Shoulder_Z_L','Shoulder_X_L','Shoulder_Y_L','Elbow_Z_L','Elbow_Y_L','Hip_Z_R','Hip_X_R',
+                  'Hip_Y_R','Knee_Z_R','Ankle_Z_R','Hip_Z_L','Hip_X_L','Hip_Y_L','Knee_Z_L','Ankle_Z_L']
     for name in dofs_names: 
         q_i = np.loadtxt(directory_name+'/'+name+'.csv')
         plt.plot(q_i)
         plt.title(name)
         plt.show()
 
-def read_joint_angles(directory_name:str)->np.ndarray:
-    dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_RIE','RShoulder_FE','RShoulder_AA','RShoulder_RIE','RElbow_FE','RElbow_PS','RHip_FE','RHip_AA','RHip_RIE','RKnee_FE','RAnkle_FE']
-    q=[]
-    for name in dofs_names: 
-        q_i = np.loadtxt(directory_name+'/'+name+'.csv')
-        q.append(q_i)
+# def read_joint_angles(directory_name:str)->np.ndarray:
+#     dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_RIE','RShoulder_FE','RShoulder_AA','RShoulder_RIE','RElbow_FE','RElbow_PS','RHip_FE','RHip_AA','RHip_RIE','RKnee_FE','RAnkle_FE']
+#     q=[]
+#     for name in dofs_names: 
+#         q_i = np.loadtxt(directory_name+'/'+name+'.csv')
+#         q.append(q_i)
     
-    q=np.array(q)
-    return q
+#     q=np.array(q)
+#     return q
 
 def read_joint_positions(file_path):
     with open(file_path, 'r') as f:

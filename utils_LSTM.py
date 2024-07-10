@@ -97,8 +97,8 @@ def modif_LSTM (trc_file_path,no_sujet,task):
 
     # Sauvegarder le fichier .trc transformé
     # Création du répertoire si nécessaire
-    LSTM_dir = '/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM'
-    LSTM_output='/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
+    LSTM_dir = '/home/tbousquet/Documents/Donnees_cosmik/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM'
+    LSTM_output='/home/tbousquet/Documents/Donnees_cosmik/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
 
     if not os.path.exists(LSTM_dir):
         os.makedirs(LSTM_dir)

@@ -111,11 +111,23 @@ while True:
         no_cam = int(input("Entrez le numéro de la caméra (ex: 26578): "))
         task = input("Entrez la tâche (ex: 'assis-debout'): ")
 
-        video_path = f'/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0{no_sujet}/{task}/videos/{no_cam}/{no_cam}.avi'
-        out_file_body26 = f'/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}.txt'
-        file_body26 = f"/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi"
-        out_file_wholebody = f'/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}.txt'
-        file_wholebody = f"/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/Data/sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi"
+        data_path='/home/tbousquet/Documents/Donnees_cosmik/Data/'
+
+        if not os.path.exists(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/body26"):
+            os.makedirs(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/body26")
+            print(f'Le répertoire pour body26 a été créé.')
+
+        if not os.path.exists(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/wholebody"):
+            os.makedirs(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/wholebody")
+            print(f'Le répertoire pour wholebody a été créé.')
+
+        video_path = f'{data_path}sujet_0{no_sujet}/{task}/videos/{no_cam}/{no_cam}.avi'
+        out_file_body26 = f'{data_path}sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}.txt'
+        file_body26 = f'{data_path}sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi'
+        out_file_wholebody = f'{data_path}sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}.txt'
+        file_wholebody = f'{data_path}sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi'
+
+
 
         if not os.path.exists(out_file_body26):
             file = file_body26
