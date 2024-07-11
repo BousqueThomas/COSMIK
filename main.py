@@ -202,7 +202,7 @@ else:
 
 # Etape 4: LSTM
 
-modif_LSTM(output_file_triangul,no_sujet,task)
+modif_LSTM(output_file_triangul,no_sujet,task,data_path)
 pathInputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
     # pathInputTRCFile="/home/tbousquet/Documents/LSTM/data/7272a71a-e70a-4794-a253-39e11cb7542c/PreAugmentation/a9fd6740-1c9d-40df-beca-15e6eecf08d7.trc"
 if no_sujet == 1:

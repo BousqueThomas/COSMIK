@@ -27,7 +27,7 @@ if not os.path.exists(f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LST
     os.makedirs(f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/')
     print(f'Le répertoire pour le LSTM a été créé.')
 
-modif_LSTM(output_file_triangul,no_sujet,task)
+modif_LSTM(output_file_triangul,no_sujet,task,data_path)
 pathInputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
 if no_sujet == 1:
     subject_mass=60.0

@@ -12,12 +12,12 @@ from scipy.spatial.transform import Rotation as R
 # import meshcat.geometry as g
 # import meshcat.transformations as tf
 
-def modif_LSTM (trc_file_path,no_sujet,task):
+def modif_LSTM (trc_file_path,no_sujet,task,data_path):
     #Modification du fichier résultat pour compatibilité avec LSTM___________________________________________________________________________
-    subject='sujet1'
-    trial='exotique'
+  
     # Chemins vers le fichier d'OpenCap
-    csv_file_path = "/home/tbousquet/Documents/COSMIK/Donnees challenge markerless/a9fd6740-1c9d-40df-beca-15e6eecf08d7.csv"
+    Dir=os.getcwd()
+    csv_file_path = f"{Dir}/ref_file_lstm_opencap.csv"
 
 
     # Lire les fichiers
@@ -97,8 +97,8 @@ def modif_LSTM (trc_file_path,no_sujet,task):
 
     # Sauvegarder le fichier .trc transformé
     # Création du répertoire si nécessaire
-    LSTM_dir = '/home/tbousquet/Documents/Donnees_cosmik/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM'
-    LSTM_output='/home/tbousquet/Documents/Donnees_cosmik/Data/sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
+    LSTM_dir = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM'
+    LSTM_output= f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
 
     if not os.path.exists(LSTM_dir):
         os.makedirs(LSTM_dir)
