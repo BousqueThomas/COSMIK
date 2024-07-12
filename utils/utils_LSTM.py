@@ -1,16 +1,16 @@
 import pandas as pd
 import numpy as np
 import os
-import utilsDataman
-from utils import TRC2numpy
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+import utils.utilsDataman
+from utils.utils import TRC2numpy
 import tensorflow as tflow
 import json
 import copy
 import time
 from scipy.spatial.transform import Rotation as R
-# import meshcat
-# import meshcat.geometry as g
-# import meshcat.transformations as tf
 
 def modif_LSTM (trc_file_path,no_sujet,task,data_path):
     #Modification du fichier résultat pour compatibilité avec LSTM___________________________________________________________________________
@@ -146,11 +146,11 @@ def augmentTRC(pathInputTRCFile, subject_mass, subject_height,
     else:
         # Lower body           
         augmenterModelType_lower = '{}_lower'.format(augmenter_model)
-        from utils import getOpenPoseMarkers_lowerExtremity2
+        from utils.utils import getOpenPoseMarkers_lowerExtremity2
         feature_markers_lower, response_markers_lower = getOpenPoseMarkers_lowerExtremity2()
         # Upper body
         augmenterModelType_upper = '{}_upper'.format(augmenter_model)
-        from utils import getMarkers_upperExtremity_noPelvis2
+        from utils.utils import getMarkers_upperExtremity_noPelvis2
         feature_markers_upper, response_markers_upper = getMarkers_upperExtremity_noPelvis2()        
         augmenterModelType_all = [augmenterModelType_lower, augmenterModelType_upper]
         feature_markers_all = [feature_markers_lower, feature_markers_upper]
@@ -160,7 +160,7 @@ def augmentTRC(pathInputTRCFile, subject_mass, subject_height,
     
     # %% Process data.
     # Import TRC file
-    trc_file = utilsDataman.TRCFile(pathInputTRCFile)
+    trc_file = utils.utilsDataman.TRCFile(pathInputTRCFile)
     
     # Loop over augmenter types to handle separate augmenters for lower and
     # upper bodies.

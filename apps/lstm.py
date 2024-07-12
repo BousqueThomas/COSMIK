@@ -1,6 +1,9 @@
-from utils_LSTM import modif_LSTM ,augmentTRC
-from utils_animation_LSTM import *
 import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+from utils.utils_LSTM import modif_LSTM ,augmentTRC
+from utils.utils_animation_LSTM import *
 
 no_sujet = int(input("Entrez le numéro du sujet (ex: 2): "))
 task = input("Entrez la tâche (ex: 'assis-debout'): ")

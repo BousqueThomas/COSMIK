@@ -36,7 +36,7 @@ liste_fichiers_main = [
 
 if not os.path.exists  ( f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all') :
     try:    
-        with open('add_hands.py') as f:
+        with open('utils/add_hands.py') as f:
             code = f.read()
             exec(code)
             print ('Les coordonnées correspondantes aux mains ont été rajoutées.')

@@ -1,9 +1,14 @@
-from utils import read_mmpose_file, get_cams_params_challenge, read_mmpose_scores, butterworth_filter
-from utils_animation_triangul import *
-from utils_triangulation import *
-
-
-
+import sys
+import os
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+from utils.utils_triangulation import *
+from utils.utils_animation_triangul import *
+from utils.utils_animation_LSTM import *
+from utils.utils import *
+from utils.utils_LSTM import modif_LSTM ,augmentTRC
+from utils.ik_utils import *
+from utils.ik_utils import *
 
 no_sujet = int(input("Entrez le numéro du sujet (ex: 2): "))
 task = input("Entrez la tâche (ex: 'assis-debout'): ")
@@ -20,6 +25,67 @@ while True:
         break
     else:
         print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
+
+while True:
+    affichage_anim_LSTM= input("Voulez-vous afficher l'animation concernant le LSTM ? (oui/non) : ").strip().lower()
+    if affichage_anim_LSTM in ['oui', 'o', 'yes', 'y']:
+        afficher_resultats_LSTM = True
+        break
+    elif affichage_anim_LSTM in ['non', 'n', 'no']:
+        afficher_resultats_LSTM = False
+        break
+    else:
+        print("Réponse non valide. Veuillez répondre par 'oui' ou 'non'.")
+
+
+
+
+
+#Etape 1 : Transformation des fichiers pour ajouter les coordonées des mains à partir des fichiers de body26 et wholebody.
+
+
+#Ces chemins ont été déterminés lors du process de MMPose
+liste_fichiers = [
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
+    ]
+
+liste_fichiers_main = [
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26578_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26579_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26580_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26582_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26583_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26584_sujet' + str(no_sujet) + '.txt',
+    f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
+]
+
+
+if not os.path.exists  ( f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all') :
+    try:    
+        with open('utils/add_hands.py') as f:
+            code = f.read()
+            exec(code)
+            print ('Les coordonnées correspondantes aux mains ont été rajoutées.')
+
+    except Exception as e:
+        print(f"Erreur lors de l'exécution de 'add_hands.py' : {e}")
+
+else : 
+    print('Le dossier regroupant les coordonnées du corps et des mains a été récupéré.')
+
+
+
+
 
 
 # Etape 2 : Triangulation
@@ -128,6 +194,7 @@ except Exception as e:
 
 
 
+
 # Etape 3 : Affichage de l'animation concernant la triangulation
 if afficher_resultats_triangul:
     affichage_triangul(output_file_triangul)
@@ -135,3 +202,32 @@ if afficher_resultats_triangul:
 else:
     print("L'animation concernant la triangulation ne sera pas affichée.")
 
+
+
+# Etape 4: LSTM
+
+modif_LSTM(output_file_triangul,no_sujet,task,data_path)
+pathInputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_transformed_'+task+'_'+str(no_sujet)+'.trc'
+    # pathInputTRCFile="/home/tbousquet/Documents/LSTM/data/7272a71a-e70a-4794-a253-39e11cb7542c/PreAugmentation/a9fd6740-1c9d-40df-beca-15e6eecf08d7.trc"
+if no_sujet == 1:
+    subject_mass=60.0
+    subject_height=1.57
+elif no_sujet == 2:
+    subject_mass=58.0
+    subject_height=1.74
+    pathOutputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
+    pathOutputCSVFile = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
+    augmenterDir=os.getcwd()
+augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, pathOutputCSVFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
+
+
+# Etape 5: Animation du LSTM :
+if afficher_resultats_LSTM:
+    affichage_LSTM(pathOutputCSVFile)
+else:
+    print("L'animation concernant le LSTM ne sera pas affichée.")
+
+
+# Etape 6 : Inverse Kinematics
+print("L'IK va commencer.")
+ik_pipe_qp (no_sujet, task, data_path)

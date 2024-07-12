@@ -60,6 +60,7 @@ def process_video_save(video_path, inferencer, output_txt_path):
                 # Extract keypoints
                 predictions = result['predictions']
                 for prediction in predictions:
+                    
                     # print("prediction", prediction)
                     
                     # bbox1 = np.array(prediction[0]['bbox'])
@@ -98,6 +99,8 @@ def process_video_save(video_path, inferencer, output_txt_path):
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
                 i += 1
+
+
 
     # Release the video capture and close windows
     cap.release()

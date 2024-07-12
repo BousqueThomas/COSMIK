@@ -17,6 +17,7 @@ Or you can run main.py to do the entire pipe from fusion_models to run_ik.
 
 
 
+
 To be able to launch everything, you will need the following installations :
 
 - Create a new environment for Mmpose 
@@ -28,6 +29,8 @@ To be able to launch everything, you will need the following installations :
 
 - conda install meshcat-python
 - conda install tqdm
+- conda install cyipopt
+- conda install quadprog
 
 - Pinocchio : conda install -c olivier.roussel hpp-fcl example-robot-data pinocchio=2.99.0
 - Gepetto Viewer : conda install gepetto-viewer gepetto-viewer-corba -c conda-forge

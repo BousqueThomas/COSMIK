@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import pinocchio as pin
 from typing import List, Tuple, Dict
-from linear_algebra_utils import col_vector_3D
+from utils.linear_algebra_utils import col_vector_3D
 from scipy.spatial.transform import Rotation as R
 
 #Build inertia matrix from 6 inertia components

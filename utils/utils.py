@@ -105,7 +105,10 @@ def butterworth_filter(data, cutoff_frequency, order=5, sampling_frequency=60):
 
 
 
-
+import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
    
 import yaml
 import json
@@ -114,7 +117,7 @@ import socket
 import requests
 import urllib.request
 import shutil
-import utilsDataman
+import utils.utilsDataman
 import pickle
 import glob
 import mimetypes
@@ -126,8 +129,8 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from utilsAuth import getToken
-from utilsAPI import getAPIURL
+from utils.utilsAuth import getToken
+from utils.utilsAPI import getAPIURL
 
 API_URL = getAPIURL()
 API_TOKEN = getToken()
@@ -1230,7 +1233,7 @@ def lowpassFilter(inputData, filtFreq, order=4):
 def TRC2numpy(pathFile, markers,rotation=None):
     # rotation is a dict, eg. {'y':90} with axis, angle for rotation
     
-    trc_file = utilsDataman.TRCFile(pathFile)
+    trc_file = utils.utilsDataman.TRCFile(pathFile)
     # print('trc_file=',trc_file)
     time = trc_file.time
     # print('time=',time)
