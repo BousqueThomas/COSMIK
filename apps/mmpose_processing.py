@@ -8,7 +8,7 @@ from tqdm import tqdm
 #Lancer mmpose_processing pour toutes les vidéos que l'on souhaite utiliser !!! 
 
 
-def process_video_save(video_path, inferencer, output_txt_path):
+def process_video_save(video_path, inferencer, output_txt_path, output_confidence_path):
     """Process a video frame by frame, visualize predicted keypoints, and save keypoints to a .txt file."""
 
     # Initialize video capture
@@ -27,9 +27,12 @@ def process_video_save(video_path, inferencer, output_txt_path):
     if not cap.isOpened():
         print(f"Error: Could not open video {video_path}")
         return
+    os.makedirs(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/body26/score", exist_ok=True)
+    os.makedirs(f"{data_path}sujet_0"+str(no_sujet)+"/"+task+"/wholebody/score", exist_ok=True)
 
     # Open the output .txt file for writing keypoints
-    with open(output_txt_path, 'w') as f:
+    #with open(output_txt_path, 'w') as f:
+    with open(output_txt_path, 'w') as f1, open(output_confidence_path, 'w') as f2:
         i=0
         with tqdm(total=total_frames, desc="Processing video", unit="frame") as pbar:
 
@@ -44,7 +47,7 @@ def process_video_save(video_path, inferencer, output_txt_path):
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 
                 # Run inference
-                result_generator = inferencer(frame_rgb, return_vis=True,draw_bbox = True, show=False)
+                result_generator = inferencer(frame_rgb, return_vis=True,draw_bbox = True, show=False, bbox_thr=0.6)
                 result = next(result_generator)
         
                 # Extract the visualization result
@@ -77,20 +80,23 @@ def process_video_save(video_path, inferencer, output_txt_path):
                         keypoints1_2d = keypoints1[:, :2]  # We need only the x, y coordinates
                         # print("keypoints", keypoints1_2d)
                         score = prediction[0]['bbox_score']
-                        # print("score", prediction[0]['bbox_score'])
+                        score_per_joint = prediction[0]['keypoint_scores']
+                        # print("DEBUG       score", prediction[0])
                         # Flatten the keypoints array and convert to string with comma separator
 
                         keypoints1_str = ','.join(map(str, keypoints1_2d.flatten()))
                         # keypoints1_str = str(i) + "," + keypoints1_str
-                        score_str = ','.join(map(str, score.flatten()))
+                        score_str = ','.join(map(str, score.flatten())) # score de bbox
+                        score_joint_str = ','.join(map(str, score_per_joint))
                         # score_str = "," + score_str
                         
                         
                         # Combine keypoints and scores into one string
                         combined_str = str(i) + "," + score_str + "," + keypoints1_str
-
+                        combined_score_str = str(i) + "," + score_joint_str
                         # Write the keypoints to the .txt file
-                        f.write(f"{combined_str}\n")
+                        f1.write(f"{combined_str}\n")
+                        f2.write(f'{combined_score_str}\n')
 
                 # Update the progress bar
                 pbar.update(1)
@@ -126,8 +132,12 @@ while True:
 
         video_path = f'{data_path}sujet_0{no_sujet}/{task}/videos/{no_cam}/{no_cam}.avi'
         out_file_body26 = f'{data_path}sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}.txt'
+        out_score_file_body26 = f'{data_path}sujet_0{no_sujet}/{task}/body26/score/result_score_{task}_{no_cam}_sujet{no_sujet}.txt' # score par joint
+
         file_body26 = f'{data_path}sujet_0{no_sujet}/{task}/body26/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi'
         out_file_wholebody = f'{data_path}sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}.txt'
+        out_score_file_wholebody = f'{data_path}sujet_0{no_sujet}/{task}/wholebody/score/result_score_{task}_{no_cam}_sujet{no_sujet}.txt'
+
         file_wholebody = f'{data_path}sujet_0{no_sujet}/{task}/wholebody/result_{task}_{no_cam}_sujet{no_sujet}_video_res.avi'
 
 
@@ -136,7 +146,7 @@ while True:
             file = file_body26
             inferencer = MMPoseInferencer('body26')
             print('Processing de MMPose avec le modèle body26.')
-            process_video_save(video_path, inferencer, out_file_body26)
+            process_video_save(video_path, inferencer, out_file_body26, out_score_file_body26)
         else:
             print('Le fichier résultat MMPose avec le modèle body26 a été récupéré.')
 
@@ -144,7 +154,7 @@ while True:
             file = file_wholebody
             inferencer = MMPoseInferencer('wholebody')
             print('Processing de MMPose avec le modèle wholebody.')
-            process_video_save(video_path, inferencer, out_file_wholebody)
+            process_video_save(video_path, inferencer, out_file_wholebody, out_score_file_wholebody)
         else:
             print('Le fichier résultat MMPose avec le modèle wholebody a été récupéré.')
 

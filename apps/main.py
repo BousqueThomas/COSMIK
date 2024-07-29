@@ -45,6 +45,16 @@ while True:
 
 
 #Ces chemins ont été déterminés lors du process de MMPose
+# liste_fichiers = [
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_55555_sujet' + str(no_sujet) + '.txt',
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_88888_sujet' + str(no_sujet) + '.txt'
+#     ]
+
+# liste_fichiers_main = [
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_55555_sujet' + str(no_sujet) + '.txt',
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_88888_sujet' + str(no_sujet) + '.txt'
+# ]
+
 liste_fichiers = [
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',
@@ -69,7 +79,6 @@ liste_fichiers_main = [
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_26586_sujet' + str(no_sujet) + '.txt'
 ]
 
-
 if not os.path.exists  ( f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all') :
     try:    
         with open('utils/add_hands.py') as f:
@@ -90,6 +99,11 @@ else :
 
 # Etape 2 : Triangulation
 
+
+# liste_fichiers_all = [
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_55555_sujet'+str(no_sujet)+'.txt',
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_88888_sujet'+str(no_sujet)+'.txt'
+# ]
 
 liste_fichiers_all = [
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/all/result_'+task+'_26585_sujet'+str(no_sujet)+'.txt',
@@ -124,6 +138,7 @@ for donnee_camera in donnees_cameras:
 # Récupération des différents paramètrers propres aux caméras.
 donnees = get_cams_params_challenge()
 
+# Calcul des matrices de projections si on a les matrices de rodrigues
 for cam in donnees :
     R_extrinseque = np.zeros(shape=(3,3))
     rotation=np.array(donnees[cam]["rotation"])
@@ -131,6 +146,18 @@ for cam in donnees :
     cv.Rodrigues(rotation.reshape(3,1), R_extrinseque)
     projection = np.concatenate([R_extrinseque, translation], axis=-1)
     donnees[cam]["projection"] = projection
+
+
+# calcul des matrices de projections si on à la matrice de rotation classique. Attention à bien laisser que les caméras sans rodrigues dans le doctionnaire (cf utils.py)
+# for cam in donnees :
+#     R_extrinseque = np.zeros(shape=(3,3))
+#     rotation=np.array(donnees[cam]["rotation"]).reshape(3,3)
+#     translation=np.array([donnees[cam]["translation"]]).reshape(3,1)
+#     projection = np.concatenate([rotation, translation], axis=-1)
+#     donnees[cam]["projection"] = projection
+
+
+
 
 rotations=[]
 translations=[]
@@ -215,9 +242,13 @@ if no_sujet == 1:
 elif no_sujet == 2:
     subject_mass=58.0
     subject_height=1.74
-    pathOutputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
-    pathOutputCSVFile = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
-    augmenterDir=os.getcwd()
+elif no_sujet == 3:
+    subject_mass=66.0
+    subject_height=1.83
+
+pathOutputTRCFile=f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.trc'
+pathOutputCSVFile = f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/LSTM/jcp_coordinates_ncameras_augmented_'+task+'_'+str(no_sujet)+'.csv'
+augmenterDir=os.getcwd()
 augmentTRC(pathInputTRCFile, subject_mass, subject_height, pathOutputTRCFile, pathOutputCSVFile, augmenterDir, augmenterModelName="LSTM", augmenter_model='v0.3', offset=True)
 
 
@@ -230,4 +261,9 @@ else:
 
 # Etape 6 : Inverse Kinematics
 print("L'IK va commencer.")
+
+# pour l'ik aveec ipopt :
+# ik_pipe (no_sujet, task, data_path)
+
+# pour l'ik qp :
 ik_pipe_qp (no_sujet, task, data_path)

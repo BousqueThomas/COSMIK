@@ -22,7 +22,7 @@ lstm_mks_dict, mapping = read_lstm_data(fichier_csv_lstm_mks)
 lstm_mks_names = get_lstm_mks_names(fichier_csv_lstm_mks) #Liste des noms des mks du lstm (totalité des mks)
 subset_challenge_mks_names = get_subset_challenge_mks_names() #Cette fonction te retourne les noms des markers dont on a besoin pour le challenge
 lstm_mks_dict = convert_to_list_of_dicts(lstm_mks_dict) #Je convertis ton dictionnaire de trajectoires (arrays) en une "trajectoire de dictionnaires", c'est plus facile à manipuler pour la calib
-lstm_mks_positions_calib = lstm_mks_dict[0] #Je prends la première frame de la trajectoire pour construire le modèle
+lstm_mks_positions_calib = lstm_mks_dict[2] #Je prends la première frame de la trajectoire pour construire le modèle
 seg_names_mks = get_segments_lstm_mks_dict_challenge() #Dictionnaire contenant les noms des segments + les mks correspondnat à chaque segment
 
 
@@ -66,12 +66,12 @@ viz.display(q0)
 
 
 
-# Test pour retrouver les joints du model pour définir les limites de la ligne 1006 de model_utils.py _ q0[7] = L5S1_FE
+# # Test pour retrouver les joints du model pour définir les limites de la ligne 1006 de model_utils.py _ q0[7] = L5S1_FE
 # q = []
 # print(lstm_mks_dict[0])
 # for i in range(len(lstm_mks_dict)):
 #     q.append(q0)
-#     q0[28] = -np.pi/2
+#     q0[11] = np.deg2rad(-45)
 
 
 

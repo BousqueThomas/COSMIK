@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Tuple, List
 import matplotlib.pyplot as plt 
+import os
 
 def read_lstm_data(file_name: str)->Tuple[Dict, Dict]:
     """_Creates two dictionnaries, one containing the 3D positions of all the markers output by the LSTM, another to map the number of the marks to the JC associated_
@@ -125,6 +126,7 @@ def write_joint_angle_results(directory_name: str, q:np.ndarray):
         directory_name (str): _Name of the directory to store the results_
         q (np.ndarray): _Joint angle results_
     """
+    os.makedirs(directory_name, exist_ok=True)
     dofs_names = ['FF_TX','FF_TY','FF_TZ','FF_Rquat0','FF_Rquat1','FF_Rquat2','FF_Rquat3','L5S1_FE','L5S1_R_EXT_INT','Shoulder_Z_R','Shoulder_X_R',
                   'Shoulder_Y_R','Elbow_Z_R','Elbow_Y_R','Shoulder_Z_L','Shoulder_X_L','Shoulder_Y_L','Elbow_Z_L','Elbow_Y_L','Hip_Z_R','Hip_X_R',
                   'Hip_Y_R','Knee_Z_R','Ankle_Z_R','Hip_Z_L','Hip_X_L','Hip_Y_L','Knee_Z_L','Ankle_Z_L']

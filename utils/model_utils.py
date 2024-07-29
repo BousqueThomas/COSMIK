@@ -7,6 +7,30 @@ from typing import List, Tuple, Dict
 from utils.linear_algebra_utils import col_vector_3D
 from scipy.spatial.transform import Rotation as R
 
+
+def check_orthogonality(matrix: np.ndarray):
+    # Vecteurs colonnes
+    X = matrix[:3, 0]
+    Y = matrix[:3, 1]
+    Z = matrix[:3, 2]
+    
+    # Calcul des produits scalaires
+    dot_XY = np.dot(X, Y)
+    dot_XZ = np.dot(X, Z)
+    dot_YZ = np.dot(Y, Z)
+    
+    # Tolérance pour les erreurs numériques
+    tolerance = 1e-6
+    
+    print(f"Dot product X.Y: {dot_XY}")
+    print(f"Dot product X.Z: {dot_XZ}")
+    print(f"Dot product Y.Z: {dot_YZ}")
+    
+    assert np.abs(dot_XY) < tolerance, "Vectors X and Y are not orthogonal"
+    assert np.abs(dot_XZ) < tolerance, "Vectors X and Z are not orthogonal"
+    assert np.abs(dot_YZ) < tolerance, "Vectors Y and Z are not orthogonal"
+
+
 #Build inertia matrix from 6 inertia components
 def make_inertia_matrix(ixx:float, ixy:float, ixz:float, iyy:float, iyz:float, izz:float)->np.ndarray:
     return np.array([[ixx, ixy, ixz], [ixy, iyy, iyz], [ixz, iyz, izz]])
@@ -125,11 +149,16 @@ def get_upperarmL_pose(mocap_mks_positions):
         Y = shoulder_center - elbow_center
         Y = Y/np.linalg.norm(Y)
         # Vecteur Z : direction de l'avant-bras, normalisé
-        Z = (mocap_mks_positions['L_melbow_study'] - mocap_mks_positions['L_lelbow_study']).reshape(3,1)
+        Z = (mocap_mks_positions['L_lelbow_study'] - mocap_mks_positions['L_melbow_study']).reshape(3,1)
         Z = Z/np.linalg.norm(Z)
         # Vecteur X : produit vectoriel de Y et Z, normalisé
-        X = np.cross(Y, Z, axis=0)
-        Z = np.cross(X, Y, axis=0)
+        X = np.cross(Y.flatten(), Z.flatten())
+        # X = np.cross(Y, Z, axis=0)
+        X = X.reshape(3, 1) / np.linalg.norm(X)
+
+        # Z = np.cross(X, Y, axis=0)
+        Z = np.cross(X.flatten(), Y.flatten())
+        Z = Z.reshape(3, 1) / np.linalg.norm(Z)
     else:
         elbow_center = (mocap_mks_positions['LHLE'] + mocap_mks_positions['LHME']).reshape(3,1)/2.0
         torso_pose = get_torso_pose(mocap_mks_positions)
@@ -142,11 +171,15 @@ def get_upperarmL_pose(mocap_mks_positions):
         X = np.cross(Y, Z, axis=0)
         Z = np.cross(X, Y, axis=0)
 
-    pose[:3,0] = X.reshape(3,)
-    pose[:3,1] = Y.reshape(3,)
-    pose[:3,2] = Z.reshape(3,)
-    pose[:3,3] = shoulder_center.reshape(3,)
-    pose[:3,:3] = orthogonalize_matrix(pose[:3,:3])
+    pose[:3, 0] = X.flatten()
+    pose[:3, 1] = Y.flatten()
+    pose[:3, 2] = Z.flatten()
+    pose[:3, 3] = shoulder_center.flatten()
+    pose[:3, :3] = orthogonalize_matrix(pose[:3, :3])
+
+    # print("Upperarm Left Pose:\n", pose)  # Impression pour débogage
+    # check_orthogonality(pose)  # Ajoutez cette ligne pour vérifier l'orthogonalité
+
 
     return pose
 
@@ -194,9 +227,15 @@ def get_lowerarmL_pose(mocap_mks_positions):
         Y = elbow_center - wrist_center
         Y = Y/np.linalg.norm(Y)
         Z = (mocap_mks_positions['L_mwrist_study'] - mocap_mks_positions['L_lwrist_study']).reshape(3,1)
-        Z = Z/np.linalg.norm(Z)
+        # Z = Z/np.linalg.norm(Z)
+        Z = Z.reshape(3, 1) / np.linalg.norm(Z)
+
         X = np.cross(Y, Z, axis=0)
-        Z = np.cross(X, Y, axis=0)
+        X = X.reshape(3, 1) / np.linalg.norm(X)
+
+        Z = np.cross(X.flatten(), Y.flatten())
+        Z = Z.reshape(3, 1) / np.linalg.norm(Z)
+        # Z = np.cross(X, Y, axis=0)
     else:
         elbow_center = (mocap_mks_positions['LHLE'] + mocap_mks_positions['LHME']).reshape(3,1)/2.0
         wrist_center = (mocap_mks_positions['LRSP'] + mocap_mks_positions['LUSP']).reshape(3,1)/2.0
@@ -208,11 +247,16 @@ def get_lowerarmL_pose(mocap_mks_positions):
         X = np.cross(Y, Z, axis=0)
         Z = np.cross(X, Y, axis=0)
 
-    pose[:3,0] = X.reshape(3,)
-    pose[:3,1] = Y.reshape(3,)
-    pose[:3,2] = Z.reshape(3,)
-    pose[:3,3] = elbow_center.reshape(3,)
-    pose[:3,:3] = orthogonalize_matrix(pose[:3,:3])
+    pose[:3, 0] = X.flatten()
+    pose[:3, 1] = Y.flatten()
+    pose[:3, 2] = Z.flatten()
+    pose[:3, 3] = elbow_center.flatten()
+    pose[:3, :3] = orthogonalize_matrix(pose[:3, :3])
+
+
+    # print("Lowerarm Left Pose:\n", pose)  # Impression pour débogage
+    # check_orthogonality(pose)  # Ajoutez cette ligne pour vérifier l'orthogonalité
+
     return pose
 
 
@@ -711,8 +755,8 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
 
     # MODEL GENERATION 
     inertia = pin.Inertia.Zero()
-    model= pin.Model()
-    geom_model = pin.GeometryModel()
+    model= pin.Model() #Modèle géométrique
+    geom_model = pin.GeometryModel() #Modèle pour l'affichage
 
     # pelvis with Freeflyer
     IDX_PELV_JF = model.addJoint(0,pin.JointModelFreeFlyer(),pin.SE3(np.array([[1,0,0],[0,0,-1],[0,1,0]]), np.matrix([0,0,0]).T),'pelvis_freeflyer')
@@ -724,7 +768,7 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
         frame = pin.Frame(i,IDX_PELV_JF,idx_frame,pin.SE3(np.eye(3,3), np.matrix(lstm_mks_local_positions[i]).T),pin.FrameType.OP_FRAME, inertia) 
         idx_frame = model.addFrame(frame,False)
     
-    pelvis_visual = pin.GeometryObject('pelvis', IDX_PELV_SF, IDX_PELV_JF, mesh_loader.load(meshes_folder_path+'/pelvis_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.15, -0.17, 0.13]).T), meshes_folder_path+'/pelvis_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
+    pelvis_visual = pin.GeometryObject('pelvis', IDX_PELV_SF, IDX_PELV_JF, mesh_loader.load(meshes_folder_path+'/pelvis_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.15, -0.17, 0.16]).T), meshes_folder_path+'/pelvis_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
     geom_model.addGeometryObject(pelvis_visual)
     visuals_dict["pelvis"] = pelvis_visual
 
@@ -743,11 +787,11 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
         frame = pin.Frame(i,IDX_L5S1_R_EXT_INT_JF,idx_frame,pin.SE3(np.eye(3,3), np.matrix(lstm_mks_local_positions[i]+ local_segments_positions['torso']).T),pin.FrameType.OP_FRAME, inertia) 
         idx_frame = model.addFrame(frame,False)
 
-    torso_visual = pin.GeometryObject('torso', IDX_TORSO_SF, IDX_L5S1_JF, mesh_loader.load(meshes_folder_path+'/torso_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.15, 0.17, 0.13]).T), meshes_folder_path+'/torso_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
+    torso_visual = pin.GeometryObject('torso', IDX_TORSO_SF, IDX_L5S1_JF, mesh_loader.load(meshes_folder_path+'/torso_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.15, 0.17, 0.15]).T), meshes_folder_path+'/torso_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
     geom_model.addGeometryObject(torso_visual)
     visuals_dict["torso"] = torso_visual
 
-    abdomen_visual = pin.GeometryObject('abdomen', IDX_TORSO_SF, IDX_L5S1_JF, mesh_loader.load(meshes_folder_path+'/abdomen_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.12, 0.05, 0.09]).T), meshes_folder_path+'/abdomen_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
+    abdomen_visual = pin.GeometryObject('abdomen', IDX_TORSO_SF, IDX_L5S1_JF, mesh_loader.load(meshes_folder_path+'/abdomen_mesh.STL'), pin.SE3(rtorso.as_matrix(), np.matrix([-0.12, 0.05, 0.12]).T), meshes_folder_path+'/abdomen_mesh.STL', np.array([0.0065, 0.0065, 0.0065]), False, np.array([0, 1, 1, 1]))
     geom_model.addGeometryObject(abdomen_visual)
     visuals_dict["abdomen"] = abdomen_visual
 
@@ -945,7 +989,7 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
         frame = pin.Frame(i, IDX_HIP_Y_JF_L, idx_frame, pin.SE3(np.eye(3), np.matrix(lstm_mks_local_positions[i]).T), pin.FrameType.OP_FRAME, inertia)
         idx_frame = model.addFrame(frame, False)
 
-    thigh_visual_L = pin.GeometryObject('upperleg_L', IDX_TGH_SF_L, IDX_HIP_Y_JF_L, mesh_loader.load(meshes_folder_path+'/upperleg_mesh.STL'), pin.SE3(np.eye(3), np.matrix([-0.13, -0.37, -0.105]).T), meshes_folder_path+'/upperleg_mesh.STL', np.array([0.0060, 0.0060, 0.0060]), False, np.array([0,1,1,0.5]))
+    thigh_visual_L = pin.GeometryObject('upperleg_L', IDX_TGH_SF_L, IDX_HIP_Y_JF_L, mesh_loader.load(meshes_folder_path+'/upperleg_mesh.STL'), pin.SE3(np.eye(3), np.matrix([-0.13, -0.37, -0.075]).T), meshes_folder_path+'/upperleg_mesh.STL', np.array([0.0060, 0.0060, 0.0060]), False, np.array([0,1,1,0.5]))
     geom_model.addGeometryObject(thigh_visual_L)
     visuals_dict["upperleg_L"] = thigh_visual_L
 
@@ -962,11 +1006,11 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
         frame = pin.Frame(i,IDX_KNEE_Z_JF_L,idx_frame,pin.SE3(np.eye(3,3), np.matrix(lstm_mks_local_positions[i]).T),pin.FrameType.OP_FRAME, inertia) 
         idx_frame = model.addFrame(frame,False)
     
-    knee_visual = pin.GeometryObject('knee_L',IDX_SHANK_SF_L, IDX_KNEE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/knee_mesh.STL'), pin.SE3(np.eye(3), np.matrix([-0.13, 0, -0.07]).T), meshes_folder_path+'/knee_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
+    knee_visual = pin.GeometryObject('knee_L',IDX_SHANK_SF_L, IDX_KNEE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/knee_mesh.STL'), pin.SE3(np.eye(3), np.matrix([-0.13, 0, -0.04]).T), meshes_folder_path+'/knee_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
     geom_model.addGeometryObject(knee_visual)
     visuals_dict["knee_L"] = knee_visual
 
-    lowerleg_visual_L = pin.GeometryObject('lowerleg_L',IDX_SHANK_SF_L, IDX_KNEE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/lowerleg_mesh.STL'), pin.SE3(rupperarm.as_matrix(), np.matrix([-0.11, -0.40, 0.05]).T), meshes_folder_path+'/lowerleg_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
+    lowerleg_visual_L = pin.GeometryObject('lowerleg_L',IDX_SHANK_SF_L, IDX_KNEE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/lowerleg_mesh.STL'), pin.SE3(rupperarm.as_matrix(), np.matrix([-0.11, -0.40, 0.08]).T), meshes_folder_path+'/lowerleg_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
     geom_model.addGeometryObject(lowerleg_visual_L)
     visuals_dict["lowerleg_L"] = lowerleg_visual_L
 
@@ -982,7 +1026,7 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
         frame = pin.Frame(i,IDX_ANKLE_Z_JF_L,idx_frame,pin.SE3(np.eye(3,3), np.matrix(lstm_mks_local_positions[i]).T),pin.FrameType.OP_FRAME, inertia) 
         idx_frame = model.addFrame(frame,False)
     
-    foot_visual_L = pin.GeometryObject('foot_L',IDX_SFOOT_SF_L, IDX_ANKLE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/foot_mesh.STL'), pin.SE3(rupperarm.as_matrix(), np.matrix([-0.11, -0.07, 0.04]).T), meshes_folder_path+'/foot_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
+    foot_visual_L = pin.GeometryObject('foot_L',IDX_SFOOT_SF_L, IDX_ANKLE_Z_JF_L, mesh_loader.load(meshes_folder_path+'/foot_mesh.STL'), pin.SE3(rupperarm.as_matrix(), np.matrix([-0.11, -0.07, 0.07]).T), meshes_folder_path+'/foot_mesh.STL',np.array([0.0060, 0.0060, 0.0060]), False , np.array([0,1,1,0.5]))
     geom_model.addGeometryObject(foot_visual_L)
     visuals_dict["foot_L"] = foot_visual_L
 
@@ -1028,53 +1072,104 @@ def build_model_challenge(mocap_mks_positions: Dict, lstm_mks_positions: Dict, m
 # #   Joint 23 Ankle_Z_L: parent=22
 
 
-    model.upperPositionLimit[7:] = np.array([np.pi/4.0,     #L5S1_FE + 
-                                            np.pi/2.0,      #L5S1_R_EXT_INT +
-                                            7.0*np.pi/6,    #Shoulder_Z_R +
-                                            np.pi/6,        #Shoulder_X_R +
-                                            np.pi/2.0 + 0.5,#Shoulder_Y_R +
-                                            np.pi,          #Elbow_Z_R +
-                                            np.pi/6,        #Elbow_Y_R + 
-                                            7.0*np.pi/6,    #Shoulder_Z_L +
-                                            np.pi,          #Shoulder_X_L +
-                                            np.pi/3,        #Shoulder_Y_L +
-                                            np.pi,          #Elbow_Z_L +
-                                            3*np.pi/4,      #Elbow_Y_L +
-                                            np.pi,          #Hip_Z_R +
-                                            2.0*np.pi/9,    #Hip_X_R +
-                                            np.pi/2.0 ,     #Hip_Y_R +
-                                            0.0,            #Knee_Z_R +
-                                            np.pi/4,        #Ankle_Z_R +
-                                            np.pi,          #Hip_Z_L +
-                                            np.pi,          #Hip_X_L +
-                                            np.pi/2,        #Hip_Y_L +
-                                            0.0,            #Knee_Z_L +
-                                            np.pi/4,        #Ankle_Z_L +
+    model.upperPositionLimit[7:] = np.array([np.deg2rad(25),     #L5S1_FE + 
+                                            np.deg2rad(45),      #L5S1_R_EXT_INT +
+                                            np.deg2rad(124),    #Shoulder_Z_R +
+                                            np.deg2rad(91),        #Shoulder_X_R +
+                                            np.deg2rad(76),#Shoulder_Y_R +
+                                            np.deg2rad(145),          #Elbow_Z_R +
+                                            np.deg2rad(73),        #Elbow_Y_R + 
+                                            np.deg2rad(124),    #Shoulder_Z_L +
+                                            np.deg2rad(126),          #Shoulder_X_L +
+                                            np.deg2rad(76),        #Shoulder_Y_L +
+                                            np.deg2rad(145),          #Elbow_Z_L +
+                                            np.deg2rad(90),      #Elbow_Y_L +
+                                            np.deg2rad(134),          #Hip_Z_R +
+                                            np.deg2rad(38),    #Hip_X_R +
+                                            np.deg2rad(40) ,     #Hip_Y_R +
+                                            np.deg2rad(5),            #Knee_Z_R +
+                                            np.deg2rad(21),        #Ankle_Z_R +
+                                            np.deg2rad(134),          #Hip_Z_L +
+                                            np.deg2rad(45),          #Hip_X_L +
+                                            np.deg2rad(40),        #Hip_Y_L +
+                                            np.deg2rad(5),            #Knee_Z_L +
+                                            np.deg2rad(21),        #Ankle_Z_L +
                                             ]) 
     
-    model.lowerPositionLimit[7:] = np.array([-np.pi,            #L5S1_FE -
-                                            -np.pi/2.0,         #L5S1_R_EXT_INT -
-                                            -np.pi/2.0,         #Shoulder_Z_R -
-                                            -np.pi,             #Shoulder_X_R -
-                                            -np.pi/3,           #Shoulder_Y_R -
-                                            0.0,                #Elbow_Z_R -
-                                            -3*np.pi/4,         #Elbow_Y_R -
-                                            -np.pi/2.0,         #Shoulder_Z_L -
-                                            -np.pi/6,           #Shoulder_X_L -
-                                            -np.pi/2.0 + 0.5,   #Shoulder_Y_L -
-                                            0.0,                #Elbow_Z_L -
-                                            -np.pi/6,           #Elbow_Y_L -
-                                            -np.pi/2.0,         #Hip_Z_R -
-                                            -np.pi,             #Hip_X_R -
-                                            -np.pi/2,           #Hip_Y_R -
-                                            -3*np.pi/4.0,       #Knee_Z_R -
-                                            -np.pi/2,           #Ankle_Z_R -
-                                            -np.pi/2,           #Hip_Z_L -
-                                            -2.0*np.pi/9,       #Hip_X_L -
-                                            -np.pi/2,           #Hip_Y_L -
-                                            -3*np.pi/4.0,       #Knee_Z_L -
-                                            -np.pi/2,           #Ankle_Z_L -
+    
+    model.lowerPositionLimit[7:] = np.array([np.deg2rad(-66),            #L5S1_FE -
+                                            np.deg2rad(-45),         #L5S1_R_EXT_INT -
+                                            np.deg2rad(-55),         #Shoulder_Z_R -
+                                            np.deg2rad(-126),             #Shoulder_X_R -
+                                            np.deg2rad(-117),           #Shoulder_Y_R -
+                                            np.deg2rad(0),                #Elbow_Z_R -
+                                            np.deg2rad(-90),         #Elbow_Y_R -
+                                            np.deg2rad(-55),         #Shoulder_Z_L -
+                                            np.deg2rad(-91),           #Shoulder_X_L -
+                                            np.deg2rad(-117),   #Shoulder_Y_L -
+                                            np.deg2rad(0),                #Elbow_Z_L -
+                                            np.deg2rad(-73),           #Elbow_Y_L -
+                                            np.deg2rad(-27),         #Hip_Z_R -
+                                            np.deg2rad(-45),             #Hip_X_R -
+                                            np.deg2rad(-40),           #Hip_Y_R -
+                                            np.deg2rad(-142),       #Knee_Z_R -
+                                            np.deg2rad(-47),           #Ankle_Z_R -
+                                            np.deg2rad(-27),           #Hip_Z_L -
+                                            np.deg2rad(-38),       #Hip_X_L -
+                                            np.deg2rad(-40),           #Hip_Y_L -
+                                            np.deg2rad(-142),       #Knee_Z_L -
+                                            np.deg2rad(-47),           #Ankle_Z_L -
                                             ])
+    
+
+    # model.upperPositionLimit[7:] = np.array([np.pi/4.0,     #L5S1_FE + 
+    #                                         np.pi/2.0,      #L5S1_R_EXT_INT +
+    #                                         7.0*np.pi/6,    #Shoulder_Z_R +
+    #                                         np.pi/6,        #Shoulder_X_R +
+    #                                         np.pi/2.0 + 0.5,#Shoulder_Y_R +
+    #                                         np.pi,          #Elbow_Z_R +
+    #                                         np.pi/6,        #Elbow_Y_R + 
+    #                                         7.0*np.pi/6,    #Shoulder_Z_L +
+    #                                         np.pi,          #Shoulder_X_L +
+    #                                         np.pi/3,        #Shoulder_Y_L +
+    #                                         np.pi,          #Elbow_Z_L +
+    #                                         3*np.pi/4,      #Elbow_Y_L +
+    #                                         np.pi,          #Hip_Z_R +
+    #                                         2.0*np.pi/9,    #Hip_X_R +
+    #                                         np.pi/2.0 ,     #Hip_Y_R +
+    #                                         0.0,            #Knee_Z_R +
+    #                                         np.pi/4,        #Ankle_Z_R +
+    #                                         np.pi,          #Hip_Z_L +
+    #                                         np.pi,          #Hip_X_L +
+    #                                         np.pi/2,        #Hip_Y_L +
+    #                                         0.0,            #Knee_Z_L +
+    #                                         np.pi/4,        #Ankle_Z_L +
+    #                                         ]) 
+
+
+    # model.lowerPositionLimit[7:] = np.array([-np.pi,            #L5S1_FE -
+    #                                         -np.pi/2.0,         #L5S1_R_EXT_INT -
+    #                                         -np.pi/2.0,         #Shoulder_Z_R -
+    #                                         -np.pi,             #Shoulder_X_R -
+    #                                         -np.pi/3,           #Shoulder_Y_R -
+    #                                         0.0,                #Elbow_Z_R -
+    #                                         -3*np.pi/4,         #Elbow_Y_R -
+    #                                         -np.pi/2.0,         #Shoulder_Z_L -
+    #                                         -np.pi/6,           #Shoulder_X_L -
+    #                                         -np.pi/2.0 + 0.5,   #Shoulder_Y_L -
+    #                                         0.0,                #Elbow_Z_L -
+    #                                         -np.pi/6,           #Elbow_Y_L -
+    #                                         -np.pi/2.0,         #Hip_Z_R -
+    #                                         -np.pi,             #Hip_X_R -
+    #                                         -np.pi/2,           #Hip_Y_R -
+    #                                         -3*np.pi/4.0,       #Knee_Z_R -
+    #                                         -np.pi/2,           #Ankle_Z_R -
+    #                                         -np.pi/2,           #Hip_Z_L -
+    #                                         -2.0*np.pi/9,       #Hip_X_L -
+    #                                         -np.pi/2,           #Hip_Y_L -
+    #                                         -3*np.pi/4.0,       #Knee_Z_L -
+    #                                         -np.pi/2,           #Ankle_Z_L -
+    #                                         ])
 
 
     return model, geom_model, visuals_dict

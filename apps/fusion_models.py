@@ -10,6 +10,16 @@ data_path='/home/tbousquet/Documents/Donnees_cosmik/Data/'
 
 
 #Ces chemins ont été déterminés lors du process de MMPose
+# liste_fichiers = [
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_55555_sujet' + str(no_sujet) + '.txt',
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_88888_sujet' + str(no_sujet) + '.txt'
+#     ]
+
+# liste_fichiers_main = [
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_55555_sujet' + str(no_sujet) + '.txt',
+#     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/wholebody/result_' + task + '_88888_sujet' + str(no_sujet) + '.txt'
+# ]
+
 liste_fichiers = [
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26585_sujet' + str(no_sujet) + '.txt',
     f'{data_path}sujet_0' + str(no_sujet) + '/' + task + '/body26/result_' + task + '_26587_sujet' + str(no_sujet) + '.txt',

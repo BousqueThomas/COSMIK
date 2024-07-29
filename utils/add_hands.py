@@ -56,17 +56,3 @@ for fichier_base, fichier_main in zip(liste_fichiers, liste_fichiers_main):
         ecrivain.writerows(donnees_combinees)
 
 
-# d = np.loadtxt('/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26585_'+subject+'.txt', delimiter = ',')
-# print(d[1].shape)
-
-# liste_fichiers_all = [
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26585_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26587_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26578_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26579_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26580_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26582_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26583_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26584_'+subject+'.txt',
-#     '/home/tbousquet/Documents/Challenge/Donnees_mmpose_avec_score/all/result_'+trial+'_26586_'+subject+'.txt'
-# ]
